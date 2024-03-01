@@ -16,8 +16,9 @@ def move(place):
 
 def encounter():
     global pos, monster_position
-    if hello:=monster_position.get(pos, None):
-        print(cowsay.cowsay(hello))
+    if mon:=monster_position.get(pos, None):
+        name, hello=mon
+        print(cowsay.cowsay(hello,cow=name))
 
 
 
@@ -41,7 +42,7 @@ for word in sys.stdin:
         case ["up"|"down"| "left"| "right"]:
             move(word.strip().split()[0])
             encounter()
-        case ["addmon", x, y,str(name), str(hello)]:
+        case ["addmon",str(name), x, y, str(hello)]:
             if str.isdigit(x) and str.isdigit(y):
                 addmon(int(x), int(y), name, hello)
             else:
