@@ -23,7 +23,7 @@ def encounter():
 
 
 def addmon(x, y, name, hello):
-    if x>10 or x<0 or y>10 or y<0:
+    if x>9 or x<0 or y>9 or y<0:
         print("Invalid arguments")
     else:
         if name in cowsay.list_cows():
