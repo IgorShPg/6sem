@@ -1,9 +1,28 @@
 import sys
 import cowsay
+from io import StringIO
+
+jgsbat = cowsay.read_dot_cow(StringIO(r"""
+$the_cow = <<EOC;
+         $thoughts
+          $thoughts
+    ,_                    _,
+    ) '-._  ,_    _,  _.-' (
+    )  _.-'.|\\\\--//|.'-._  (
+     )'   .'\/o\/o\/'.   `(
+      ) .' . \====/ . '. (
+       )  / <<    >> \  (
+        '-._/``  ``\_.-'
+  jgs     __\\\\'--'//__
+         (((""`  `"")))
+EOC
+"""))
+
 
 
 pos=0, 0
 monster_position={}
+custom_monsters={"jgsbat" : jgsbat}
 
 def move(place):
     global pos
@@ -18,7 +37,10 @@ def encounter():
     global pos, monster_position
     if mon:=monster_position.get(pos, None):
         name, hello=mon
-        print(cowsay.cowsay(hello,cow=name))
+        if name in custom_monsters:
+            print(cowsay.cowsay(hello,cowfile=custom_monsters[name]))
+        else:
+            print(cowsay.cowsay(hello,cow=name))
 
 
 
@@ -26,7 +48,7 @@ def addmon(x, y, name, hello):
     if x>9 or x<0 or y>9 or y<0:
         print("Invalid arguments")
     else:
-        if name in cowsay.list_cows():
+        if name in cowsay.list_cows() or name in custom_monsters:
             global monster_position
             replace=monster_position.get((x,y), None)
             monster_position[(x,y)]=name, hello
