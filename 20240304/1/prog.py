@@ -21,6 +21,23 @@ EOC
 
 
 
+
+jgsbat = cowsay.read_dot_cow(StringIO(r"""
+$the_cow = <<EOC;
+         $thoughts
+          $thoughts
+    ,_                    _,
+    ) '-._  ,_    _,  _.-' (
+    )  _.-'.|\\\\--//|.'-._  (
+     )'   .'\/o\/o\/'.   `(
+      ) .' . \====/ . '. (
+       )  / <<    >> \  (
+        '-._/``  ``\_.-'
+  jgs     __\\\\'--'//__
+         (((""`  `"")))
+EOC
+"""))
+
 pos=0, 0
 monster_position={}
 custom_monsters={"jgsbat" : jgsbat}
