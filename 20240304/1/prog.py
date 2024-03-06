@@ -60,6 +60,7 @@ def addmon(x, y, name, hello):
             print("Cannot add unknown monster")
 
 
+print("<<< Welcome to Python-MUD 0.1 >>>")
 for word in sys.stdin:
     match word.strip().split():
         case ["up"|"down"| "left"| "right"]:
