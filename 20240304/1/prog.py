@@ -1,5 +1,6 @@
 import sys
 import cowsay
+import shlex
 from io import StringIO
 
 jgsbat = cowsay.read_dot_cow(StringIO(r"""
