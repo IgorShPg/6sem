@@ -17,20 +17,20 @@ def move(place):
 def encounter():
     global pos, monster_position
     if mon:=monster_position.get(pos, None):
-        name, hello=mon
+        name, hello=mon[0], mon[1]
         print(cowsay.cowsay(hello,cow=name))
 
 
 
-def addmon(x, y, name, hello):
+def addmon(x, y, name, hello, hp):
     if x>9 or x<0 or y>9 or y<0:
         print("Invalid arguments")
     else:
         if name in cowsay.list_cows():
             global monster_position
             replace=monster_position.get((x,y), None)
-            monster_position[(x,y)]=name, hello
-            print(f"Added monster {name} to {x,y} saying {hello}")
+            monster_position[(x,y)]=name, hello, hp
+            print(f"Added monster {name} with {hp} hitpoints to {x,y} saying {hello}")
             if replace:
                 print("Replaced the old monster")
         else:
