@@ -1,6 +1,6 @@
 import sys
 import cowsay
-
+import shlex
 
 pos=0, 0
 monster_position={}
@@ -38,15 +38,25 @@ def addmon(x, y, name, hello):
 
 
 for word in sys.stdin:
-    match word.strip().split():
+    match shlex.split(word):
         case ["up"|"down"| "left"| "right"]:
             move(word.strip().split()[0])
             encounter()
-        case ["addmon",str(name), x, y, str(hello)]:
-            if str.isdigit(x) and str.isdigit(y):
-                addmon(int(x), int(y), name, hello)
-            else:
+        case ["addmon",str(name),*args]:
+            if len(args) != 7:
                 print("Invalid arguments")
+            else:
+                i=0
+                while i < 7:
+                    match args[i:i+2]:
+                        case ["hello", str(hel_str)]:
+                            hello=hel_str
+                        case ["hp", hitpoints]:
+                            hp=int(hitpoints)
+                        case ["coords", x]:
+                            x,y,i=int(x), int(args[i+2]), i+1
+                    i+=2
+                addmon(x,y,name,hello,hp)
         case _:
             print("Invalid command")
 
