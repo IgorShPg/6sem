@@ -20,24 +20,6 @@ EOC
 """))
 
 
-
-
-jgsbat = cowsay.read_dot_cow(StringIO(r"""
-$the_cow = <<EOC;
-         $thoughts
-          $thoughts
-    ,_                    _,
-    ) '-._  ,_    _,  _.-' (
-    )  _.-'.|\\\\--//|.'-._  (
-     )'   .'\/o\/o\/'.   `(
-      ) .' . \====/ . '. (
-       )  / <<    >> \  (
-        '-._/``  ``\_.-'
-  jgs     __\\\\'--'//__
-         (((""`  `"")))
-EOC
-"""))
-
 pos=0, 0
 monster_position={}
 custom_monsters={"jgsbat" : jgsbat}
@@ -54,7 +36,7 @@ def move(place):
 def encounter():
     global pos, monster_position
     if mon:=monster_position.get(pos, None):
-        name, hello=mon
+        name, hello=mon[0], mon[1]
         if name in custom_monsters:
             print(cowsay.cowsay(hello,cowfile=custom_monsters[name]))
         else:
@@ -62,15 +44,15 @@ def encounter():
 
 
 
-def addmon(x, y, name, hello):
+def addmon(x, y, name, hello, hp):
     if x>9 or x<0 or y>9 or y<0:
         print("Invalid arguments")
     else:
         if name in cowsay.list_cows() or name in custom_monsters:
             global monster_position
             replace=monster_position.get((x,y), None)
-            monster_position[(x,y)]=name, hello
-            print(f"Added monster {name} to {x,y} saying {hello}")
+            monster_position[(x,y)]=name, hello, hp
+            print(f"Added monster {name} with {hp} hitpoints to {x, y} saying {hello}")
             if replace:
                 print("Replaced the old monster")
         else:
@@ -83,11 +65,21 @@ for word in sys.stdin:
         case ["up"|"down"| "left"| "right"]:
             move(word.strip().split()[0])
             encounter()
-        case ["addmon",str(name), x, y, str(hello)]:
-            if str.isdigit(x) and str.isdigit(y):
-                addmon(int(x), int(y), name, hello)
-            else:
+        case ["addmon", str(name), *args]:
+            if len(args) != 7:
                 print("Invalid arguments")
+            else:
+                i = 0
+                while i < len(args):
+                    match args[i: i + 2]:
+                        case ["hello", str(hello_string)]:
+                            hello = hello_string
+                        case ["hp", hitpoints]:
+                            hp = int(hitpoints)
+                        case ["coords", x]:
+                            x, y, i = int(x), int(args[i + 2]), i + 1
+                    i += 2
+                addmon(x, y, name, hello, hp)
         case _:
             print("Invalid command")
 
