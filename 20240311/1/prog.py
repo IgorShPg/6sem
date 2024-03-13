@@ -59,9 +59,9 @@ def addmon(x, y, name, hello, hp):
         else:
             print("Cannot add unknown monster")
 
-def attack():
+def attack(name):
     global pos, monster_position
-    if mon := monster_position.get(pos, None):
+    if (mon := monster_position.get(pos, None)) and mon[0] == name:
         damage = 10 if mon[2] >= 10 else mon[2]
         print(f"Attacked {mon[0]},  damage {damage} hp")
         monster_position[pos][2]-=damage
@@ -71,7 +71,7 @@ def attack():
             print(f"{mon[0]} died")
             del monster_position[pos]
     else:
-        print("No monster here")
+        print(f"No {name} here")
     
 
 
@@ -121,7 +121,12 @@ class MUD(cmd.Cmd):
             addmon(x, y, name,  hello, hp)
         
     def do_attack(self, args):
-        attack()
+        name=parse(args)[0]
+        attack(name)
+
+    def complete_attack(self, text, line, begidx, endidx):
+        if text and len(shlex.split(line)) == 2 or not text and len(shlex.split(line)) == 1:
+            return [mon for mon in cowsay.list_cows() + list(custom_monsters.keys()) if mon.startswith(text)]
 
 
 
