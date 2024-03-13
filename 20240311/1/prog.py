@@ -60,9 +60,10 @@ def addmon(x, y, name, hello, hp):
         else:
             print("Cannot add unknown monster")
 
-def attack(weapon="sword"):
+
+def attack(name,weapon="sword"):
     global pos, monster_position
-    if mon := monster_position.get(pos, None):
+    if (mon := monster_position.get(pos, None)) and mon[0] == name:
         damage = weapons[weapon] if mon[2] >= weapons[weapon] else mon[2]
         print(f"Attacked {mon[0]},  damage {damage} hp")
         monster_position[pos][2]-=damage
@@ -72,7 +73,7 @@ def attack(weapon="sword"):
             print(f"{mon[0]} died")
             del monster_position[pos]
     else:
-        print("No monster here")
+        print(f"No {name} here")
     
 
 
@@ -122,7 +123,7 @@ class MUD(cmd.Cmd):
             addmon(x, y, name,  hello, hp)
         
     def do_attack(self, args):
-        args, weapon=parse(args), "sword"
+        name, *args, weapon=parse(args), "sword"
         if args and args[0] == "with":
             if args[1] in weapons:
                 weapon=args[1]
@@ -130,13 +131,20 @@ class MUD(cmd.Cmd):
                 print("Unknown weapon")
                 weapon=None
         if weapon:
-            attack(weapon)
+            attack(name, weapon)
 
     def complete_attack(self, text, line, begidx, endidx):
         if text and len(shlex.split(line))==2 or not text and len(shlex.split(line))==1:
-            return[i for i in ["with"] if i.startswith(text)]
+             return [mon for mon in cowsay.list_cows() + list(custom_monsters.keys()) if mon.startswith(text)]
         elif text and len(shlex.split(line))==3 or not text and len(shlex.split(line))==2:
+            return[i for i in ["with"] if i.startswith(text)]
+        elif text and len(shlex.split(line))==4 or not text and len(shlex.split(line))==3:
             return[i for i in weapons if i.startswith(text)]
+=======
+      
+
+    
+
 
 
 
