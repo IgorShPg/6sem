@@ -52,12 +52,27 @@ def addmon(x, y, name, hello, hp):
         if name in cowsay.list_cows() or name in custom_monsters:
             global monster_position
             replace=monster_position.get((x,y), None)
-            monster_position[(x,y)]=name, hello, hp
+            monster_position[(x,y)]=[name, hello, hp]
             print(f"Added monster {name} with {hp} hitpoints to {x, y} saying {hello}")
             if replace:
                 print("Replaced the old monster")
         else:
             print("Cannot add unknown monster")
+
+def attack():
+    global pos, monster_position
+    if mon := monster_position.get(pos, None):
+        damage = 10 if mon[2] >= 10 else mon[2]
+        print(f"Attacked {mon[0]},  damage {damage} hp")
+        monster_position[pos][2]-=damage
+        if monster_position[pos][2]:
+            print(f"{mon[0]} now has {monster_position[pos][2]}")
+        else:
+            print(f"{mon[0]} died")
+            del monster_position[pos]
+    else:
+        print("No monster here")
+    
 
 
 def parse(args):
@@ -102,10 +117,11 @@ class MUD(cmd.Cmd):
     def do_addmon(self, args):
         name, *args=parse(args)
         if args:=parse_addmon(args):
-            print(args)
             x, y, hello, hp=args
-            print(hp)
             addmon(x, y, name,  hello, hp)
+        
+    def do_attack(self, args):
+        attack()
 
 
 
