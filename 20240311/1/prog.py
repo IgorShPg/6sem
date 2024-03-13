@@ -2,6 +2,7 @@ import sys
 import cowsay
 import shlex
 from io import StringIO
+import cmd
 
 jgsbat = cowsay.read_dot_cow(StringIO(r"""
 $the_cow = <<EOC;
@@ -59,31 +60,58 @@ def addmon(x, y, name, hello, hp):
             print("Cannot add unknown monster")
 
 
-print("<<< Welcome to Python-MUD 0.1 >>>")
-for word in sys.stdin:
-    match word.strip().split():
-        case ["up"|"down"| "left"| "right"]:
-            move(word.strip().split()[0])
-            encounter()
-        case ["addmon", str(name), *args]:
-            if len(args) != 7:
-                print("Invalid arguments")
-            else:
-                i = 0
-                while i < len(args):
-                    match args[i: i + 2]:
-                        case ["hello", str(hello_string)]:
-                            hello = hello_string
-                        case ["hp", hitpoints]:
-                            hp = int(hitpoints)
-                        case ["coords", x]:
-                            x, y, i = int(x), int(args[i + 2]), i + 1
-                    i += 2
-                addmon(x, y, name, hello, hp)
-        case _:
-            print("Invalid command")
+def parse(args):
+    return shlex.split(args)
+
+def parse_addmon(args):
+    if len(args) != 7:
+        print("Invalid arguments")
+        return None
+    i = 0
+    while i < len(args):
+        match args[i: i + 2]:
+            case ["hello", str(hello_string)]:
+                hello = hello_string
+            case ["hp", hitpoints]:
+                hp = int(hitpoints)
+            case ["coords", x]:
+                x, y, i = int(x), int(args[i + 2]), i + 1
+        i += 2
+    return x, y, hello, hp
+
+class MUD(cmd.Cmd):
+    intro="<<< Welcome to Python-MUD 0.1 >>>"
+    prompt="(MUD )"
+
+    def do_up(self, args):
+        move("up")
+        encounter()
+
+    def do_down(self, args):
+        move("down")
+        encounter()
+    
+    def do_left(self, args):
+        move("left")
+        encounter()
+    
+    def do_right(self, args):
+        move("right")
+        encounter()
+
+    def do_addmon(self, args):
+        name, *args=parse(args)
+        if args:=parse_addmon(args):
+            print(args)
+            x, y, hello, hp=args
+            print(hp)
+            addmon(x, y, name,  hello, hp)
 
 
 
+        
+
+
+MUD().cmdloop()
 
     
