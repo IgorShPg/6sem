@@ -98,7 +98,7 @@ def parse_addmon(args):
 
 class MUD(cmd.Cmd):
     intro="<<< Welcome to Python-MUD 0.1 >>>"
-    prompt="(MUD )"
+    prompt="(MUD)"
 
     def do_up(self, args):
         move("up")
@@ -123,7 +123,7 @@ class MUD(cmd.Cmd):
             addmon(x, y, name,  hello, hp)
         
     def do_attack(self, args):
-        name, *args, weapon=parse(args), "sword"
+        name, *args, weapon=*parse(args), "sword"
         if args and args[0] == "with":
             if args[1] in weapons:
                 weapon=args[1]
@@ -140,7 +140,6 @@ class MUD(cmd.Cmd):
             return[i for i in ["with"] if i.startswith(text)]
         elif text and len(shlex.split(line))==4 or not text and len(shlex.split(line))==3:
             return[i for i in weapons if i.startswith(text)]
-=======
       
 
     
