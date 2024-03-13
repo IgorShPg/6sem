@@ -24,6 +24,7 @@ EOC
 pos=0, 0
 monster_position={}
 custom_monsters={"jgsbat" : jgsbat}
+weapons={"sword" : 10, "spear" : 15, "axe" : 20}
 
 def move(place):
     global pos
@@ -59,10 +60,10 @@ def addmon(x, y, name, hello, hp):
         else:
             print("Cannot add unknown monster")
 
-def attack():
+def attack(weapon="sword"):
     global pos, monster_position
     if mon := monster_position.get(pos, None):
-        damage = 10 if mon[2] >= 10 else mon[2]
+        damage = weapons[weapon] if mon[2] >= weapons[weapon] else mon[2]
         print(f"Attacked {mon[0]},  damage {damage} hp")
         monster_position[pos][2]-=damage
         if monster_position[pos][2]:
@@ -121,7 +122,21 @@ class MUD(cmd.Cmd):
             addmon(x, y, name,  hello, hp)
         
     def do_attack(self, args):
-        attack()
+        args, weapon=parse(args), "sword"
+        if args and args[0] == "with":
+            if args[1] in weapons:
+                weapon=args[1]
+            else:
+                print("Unknown weapon")
+                weapon=None
+        if weapon:
+            attack(weapon)
+
+    def complete_attack(self, text, line, begidx, endidx):
+        if text and len(shlex.split(line))==2 or not text and len(shlex.split(line))==1:
+            return[i for i in ["with"] if i.startswith(text)]
+        elif text and len(shlex.split(line))==3 or not text and len(shlex.split(line))==2:
+            return[i for i in weapons if i.startswith(text)]
 
 
 
