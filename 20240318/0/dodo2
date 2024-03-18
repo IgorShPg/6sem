@@ -1,0 +1,7 @@
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 12:53 hvc0     00:00:00 /init
+root         5     1  0 12:53 hvc0     00:00:00 plan9 --control-socket 5 --log-level 4 --server-fd 6 --pipe-fd 8 --log-truncate
+root         8     1  0 12:53 ?        00:00:00 /init
+root         9     8  0 12:53 ?        00:00:00 /init
+root        10     9  0 12:53 pts/0    00:00:00 -bash
+root       161    10  0 13:09 pts/0    00:00:00 ps -ef
