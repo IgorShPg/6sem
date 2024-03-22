@@ -1,8 +1,11 @@
 import sys
 import cowsay
 import shlex
+import readline
 from io import StringIO
 import cmd
+import socket
+
 
 jgsbat = cowsay.read_dot_cow(StringIO(r"""
 $the_cow = <<EOC;
@@ -26,56 +29,25 @@ monster_position={}
 custom_monsters={"jgsbat" : jgsbat}
 weapons={"sword" : 10, "spear" : 15, "axe" : 20}
 
-def move(place):
-    global pos
-    where={"up":(0,-1), "down":(0,1), "left": (-1,0), "right":(1,0)}
-    pos=tuple(map(lambda x,y: x+y+(-10 if x+y>9 else 0)+ (10 if x+y<0 else 0), pos, where[place]))
-    print(f"Moved to {pos}")
 
-    
-
-
-def encounter():
-    global pos, monster_position
-    if mon:=monster_position.get(pos, None):
-        name, hello=mon[0], mon[1]
-        if name in custom_monsters:
-            print(cowsay.cowsay(hello,cowfile=custom_monsters[name]))
-        else:
-            print(cowsay.cowsay(hello,cow=name))
-
-
-
-def addmon(x, y, name, hello, hp):
-    if x>9 or x<0 or y>9 or y<0:
-        print("Invalid arguments")
+def which_cow(name, hello):
+    if name in custom_monsters:
+        print(cowsay.cowsay(hello, cowfile=custom_monsters[name]))
     else:
-        if name in cowsay.list_cows() or name in custom_monsters:
-            global monster_position
-            replace=monster_position.get((x,y), None)
-            monster_position[(x,y)]=[name, hello, hp]
-            print(f"Added monster {name} with {hp} hitpoints to {x, y} saying {hello}")
-            if replace:
-                print("Replaced the old monster")
+        print(cowsay.cowsay(hello, cow=name))
+
+
+def request(strok):
+    global cowsocket
+    cowsocket.send(f"{strok}\n".encode())
+    ans=cowsocket.recv(1024).decode().strip()
+    for i in ans.split("\n"):
+        if i.startswith("COW"):
+            i=i.split()
+            name, hello=i[1]," ".join(i[2:])
+            which_cow(name, hello)
         else:
-            print("Cannot add unknown monster")
-
-
-def attack(name,weapon="sword"):
-    global pos, monster_position
-    if (mon := monster_position.get(pos, None)) and mon[0] == name:
-        damage = weapons[weapon] if mon[2] >= weapons[weapon] else mon[2]
-        print(f"Attacked {mon[0]},  damage {damage} hp")
-        monster_position[pos][2]-=damage
-        if monster_position[pos][2]:
-            print(f"{mon[0]} now has {monster_position[pos][2]}")
-        else:
-            print(f"{mon[0]} died")
-            del monster_position[pos]
-    else:
-        print(f"No {name} here")
-    
-
+            print(i)
 
 def parse(args):
     return shlex.split(args)
@@ -96,31 +68,30 @@ def parse_addmon(args):
         i += 2
     return x, y, hello, hp
 
+
+
+
 class MUD(cmd.Cmd):
     intro="<<< Welcome to Python-MUD 0.1 >>>"
     prompt="(MUD)"
 
     def do_up(self, args):
-        move("up")
-        encounter()
+        request("move 0 -1")
 
     def do_down(self, args):
-        move("down")
-        encounter()
+        request("move 0 1")
     
     def do_left(self, args):
-        move("left")
-        encounter()
-    
+        request("move -1 0")
+
     def do_right(self, args):
-        move("right")
-        encounter()
+        request("move 1 0")
 
     def do_addmon(self, args):
         name, *args=parse(args)
         if args:=parse_addmon(args):
             x, y, hello, hp=args
-            addmon(x, y, name,  hello, hp)
+            request(f"addmon {x} {y} {name} {hp} {hello}")
         
     def do_attack(self, args):
         name, *args, weapon=*parse(args), "sword"
@@ -131,7 +102,7 @@ class MUD(cmd.Cmd):
                 print("Unknown weapon")
                 weapon=None
         if weapon:
-            attack(name, weapon)
+            request(f"attack {name} {weapons[weapon]}")
 
     def complete_attack(self, text, line, begidx, endidx):
         if text and len(shlex.split(line))==2 or not text and len(shlex.split(line))==1:
@@ -144,12 +115,11 @@ class MUD(cmd.Cmd):
 
     
 
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cowsocket:
+    cowsocket.connect(("localhost", 1337))
+    MUD().cmdloop()
 
 
 
-        
-
-
-MUD().cmdloop()
-
+    
     
