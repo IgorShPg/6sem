@@ -1,53 +1,27 @@
-import sys
 import cowsay
 import shlex
-import readline
-from io import StringIO
 import cmd
 import socket
+import readline
+import threading
+import sys
 
 
-jgsbat = cowsay.read_dot_cow(StringIO(r"""
-$the_cow = <<EOC;
-         $thoughts
-          $thoughts
-    ,_                    _,
-    ) '-._  ,_    _,  _.-' (
-    )  _.-'.|\\\\--//|.'-._  (
-     )'   .'\/o\/o\/'.   `(
-      ) .' . \====/ . '. (
-       )  / <<    >> \  (
-        '-._/``  ``\_.-'
-  jgs     __\\\\'--'//__
-         (((""`  `"")))
-EOC
-"""))
 
 
 pos=0, 0
 monster_position={}
-custom_monsters={"jgsbat" : jgsbat}
+custom_monsters={"jgsbat"}
 weapons={"sword" : 10, "spear" : 15, "axe" : 20}
+flag=True
 
 
-def which_cow(name, hello):
-    if name in custom_monsters:
-        print(cowsay.cowsay(hello, cowfile=custom_monsters[name]))
-    else:
-        print(cowsay.cowsay(hello, cow=name))
 
 
 def request(strok):
     global cowsocket
     cowsocket.send(f"{strok}\n".encode())
-    ans=cowsocket.recv(1024).decode().strip()
-    for i in ans.split("\n"):
-        if i.startswith("COW"):
-            i=i.split()
-            name, hello=i[1]," ".join(i[2:])
-            which_cow(name, hello)
-        else:
-            print(i)
+
 
 def parse(args):
     return shlex.split(args)
@@ -68,6 +42,15 @@ def parse_addmon(args):
         i += 2
     return x, y, hello, hp
 
+
+def recieve(cmdline):
+    global flag, cowsocket
+    while flag:
+        msg = cowsocket.recv(1024).decode()
+        if msg.strip() == "exit":
+            break
+
+        print(f"\n{msg.strip()}\n{cmdline.prompt}{readline.get_line_buffer()}", end="", flush=True)
 
 
 
@@ -104,6 +87,13 @@ class MUD(cmd.Cmd):
         if weapon:
             request(f"attack {name} {weapons[weapon]}")
 
+    def do_exit(self, args):
+        global flag
+        request("exit")
+        flag = False
+        return True
+
+
     def complete_attack(self, text, line, begidx, endidx):
         if text and len(shlex.split(line))==2 or not text and len(shlex.split(line))==1:
              return [mon for mon in cowsay.list_cows() + list(custom_monsters.keys()) if mon.startswith(text)]
@@ -116,8 +106,19 @@ class MUD(cmd.Cmd):
     
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cowsocket:
-    cowsocket.connect(("localhost", 1337))
-    MUD().cmdloop()
+   cowsocket.connect(("localhost", 1337))
+   if nickname := sys.argv[1]:
+        cowsocket.send(f"login {nickname}\n".encode())
+        ans = cowsocket.recv(1024).decode()
+        print(ans)
+        if ans.strip() != "This login is already taken":
+            cmdline = MUD()
+            reciever = threading.Thread(target=recieve, args=(cmdline,))
+            reciever.start()
+            cmdline.cmdloop()
+   else:
+        print("You must enter a login for MUD")
+
 
 
 

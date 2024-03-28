@@ -72,7 +72,7 @@ def attack(name,damage,gamer):
 
 def login(me, nickname):
     global logins
-    if nickname in logins:
+    if nickname in logins.values():
         return "This login is already taken", False
     else:
         logins[me] = nickname
